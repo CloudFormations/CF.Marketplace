@@ -37,7 +37,7 @@ Package acceptance validation error: AzureAppCannotAddTrackingId The package you
 - Remove all references to the resource group in the dependsOn clauses.
 - Add the partner attribution ID values.
 - Add a linked ARM template to deploy ADF artifacts.
-
+- Rename databricks managed resource group variable.
 
 
 /*

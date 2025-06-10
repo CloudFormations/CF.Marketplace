@@ -191,6 +191,83 @@
                 ]
             },
             {
+            "name": "options",
+            "label": "Options",
+            "elements": [
+                {
+                    "name": "optionDetails",
+                    "type": "Microsoft.Common.TextBlock",
+                    "visible": true,
+                    "options": {
+                        "text": "Optional deploy settings covering additional Azure Resources that can be used as part of your CF.Cumulus deployment."
+                        }
+                },
+                {
+                    "name": "deployADF",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Data Factory",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy Azure Data Factory."
+                },
+                {
+                    "name": "deployWorkers",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Worker Data Factory",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a separate Azure Data Factory instance to house Worker and Bootstrap pipelines separately."
+                },
+                {
+                    "name": "deploySQL",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure SQL Database",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure SQL Database to house all metadata."
+                },
+                {
+                    "name": "deployFunction",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Function App",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure Function App."
+                },
+                {
+                    "name": "deployADBWorkspace",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Databricks Workspace",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure Databricks workspace."
+                },
+                {
+                    "name": "setRoleAssignments",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Set Role Assignments",
+                    "defaultValue": true,
+                    "toolTip": "Optionally setup role assignments as part of the deployment."
+                },
+                {
+                    "name": "deployNetworking",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Networking Resources",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a custom VNet for the Azure Databricks workspace."
+                },
+                {
+                    "name": "deployVM",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Virtual Machine as Data Factory SHIR",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a Virtual Machine to house self-hosted Integration Runtime (IR) for Azure Data Factory."
+                },
+                {
+                    "name": "configureGitHub",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Configure GitHub for Data Factory",
+                    "defaultValue": false,
+                    "toolTip": "Optionally configure GitHub repository for Azure Data Factory."
+                }
+            ]
+            },
+            {
                 "name": "tags",
                 "label": "Tags",
                 "elements": [
@@ -224,7 +301,16 @@
             "aspSKU": "[steps('config').compute.aspSKU]",
             "deploySQLDacpac": "[steps('config').sql.deploySQLDacpac]",
             "myIPAddress": "[steps('config').sql.myIPAddress]",
-            "allowAzureServices": "[steps('config').sql.allowAzureServices]"
+            "allowAzureServices": "[steps('config').sql.allowAzureServices]",
+            "deployADF": "[steps('options').deployADF]",
+            "deployWorkers": "[steps('options').deployWorkers]",
+            "deploySQL": "[steps('options').deploySQL]",
+            "deployFunction": "[steps('options').deployFunction]",
+            "deployADBWorkspace": "[steps('options').deployADBWorkspace]",
+            "setRoleAssignments": "[steps('options').setRoleAssignments]",
+            "deployNetworking": "[steps('options').deployNetworking]",
+            "deployVM": "[steps('options').deployVM]",
+            "configureGitHub": "[steps('options').configureGitHub]"
         }
     }
 }

@@ -219,7 +219,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/coreTemplate.json",
+          "uri": "https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/main/products/cf.cumulus/linked/coreTemplate.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -262,7 +262,7 @@
         "timeout": "PT30M",
         "cleanupPreference": "OnSuccess",
         "retentionInterval": "P1D",
-        "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\""
+        "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/main/products/cf.cumulus/linked/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\""
       },
       "dependsOn": [
         "coreTemplateDeployment"
