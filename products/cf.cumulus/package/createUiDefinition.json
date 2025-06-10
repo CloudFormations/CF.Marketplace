@@ -1,0 +1,316 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.cumulus.json#",
+    "handler": "Microsoft.Azure.CreateUIDef",
+    "version": "0.1.2-preview",
+    "parameters": {
+        "basics": [
+            {
+                "name": "infoMessage",
+                "type": "Microsoft.Common.InfoBox",
+                "visible": true,
+                "options": {
+                    "icon": "Info",
+                    "text": "Deploy an empty instance of CF.Cumulus ready for a small amount of post deployment configuration by the Cloud Formations product team."
+                    }
+            }
+         ],
+        "steps": [
+            {
+            "name": "config",
+            "label": "Configuration",
+            "elements": [
+                {
+                    "name": "infoMessage",
+                    "type": "Microsoft.Common.InfoBox",
+                    "visible": true,
+                    "options": {
+                        "icon": "Info",
+                        "text": "Start configuring your CF.Cumulus product deployment. All default values can be used."
+                        }
+                },
+                {
+                    "name": "naming",
+                    "type": "Microsoft.Common.Section",
+                    "label": "Resource Naming",
+                    "elements": [
+                            {
+                                "name": "computeDetails",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "Naming values to make up the Azure Resource names to be created and deployed for the CF.Cumulus product."
+                                    }
+                            },
+                            {
+                                "name": "orgName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Product Name Prefix Code",
+                                "defaultValue": "cf",
+                                "toolTip": "The naming prefix for all resources to be deployed.",
+                                "constraints": { "required": true }
+                            },
+                            {
+                                "name": "domainName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Product Name",
+                                "defaultValue": "cumulus",
+                                "toolTip": "The optional middle part naming for all resources to be deployed. Suggested as the business unit, project or domain.",
+                                "constraints": { "required": true }
+                            },
+                            {
+                                "name": "envName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Environment Name",
+                                "defaultValue": "dev",
+                                "toolTip": "The environment name abbreviation used for the deployment.",
+                                "constraints": { "required": true }
+                            },
+                            {
+                                "name": "datalakeName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Data Lake Storage Name Suffix",
+                                "defaultValue": "dls",
+                                "toolTip": "Optional naming abbreviation for the Azure Data Lake Storage account.",
+                                "constraints": { "required": true }
+                            },
+                            {
+                                "name": "functionStorageName",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Function App Storage Name Suffix",
+                                "defaultValue": "st",
+                                "toolTip": "Optional naming abbreviation for the Azure Storage account used to support the Azure Functions App.",
+                                "constraints": { "required": true }
+                            },
+                                                        {
+                                "name": "uniqueIdentifier",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Numeric Identifier",
+                                "defaultValue": "01",
+                                "toolTip": "The numeric identifier for all resources as a naming suffix, used to differentiate between instances of resources.",
+                                "constraints": { "required": true }
+                            }
+                    ]
+                },
+                {
+                    "name": "compute",
+                    "type": "Microsoft.Common.Section",
+                    "label": "Compute Tiers",
+                    "elements": [
+                            {
+                                "name": "computeDetails",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "Set the compute tiers for Azure Databricks and the Azure App Service Plan required as part of the CF.Cumulus deployment."
+                                    }
+                            },
+                            {
+                                "name": "databricksSKU",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "Databricks SKU",
+                                "defaultValue": ["Premium"],
+                                "toolTip": "The product SKU for the Azure Databricks workspace.",
+                                "constraints": 
+                                { 
+                                    "allowedValues": [
+                                    {
+                                        "label": "Premium",
+                                        "description": "Using a Databricks Premium SKU and features. Recommended.",
+                                        "value": "Premium"
+                                    },
+                                    {
+                                        "label": "Standard",
+                                        "description": "Using a Databricks Standard SKU and limited features.",
+                                        "value": "Standard"
+                                    }
+                                    ],
+                                    "required": true 
+                                }
+                            },
+                            {
+                                "name": "aspSKU",
+                                "type": "Microsoft.Common.DropDown",
+                                "label": "App Service Plan SKU",
+                                "defaultValue": ["Consumption"],
+                                "toolTip": "The product SKU for the App Service Plan used by the Azure Function App.",
+                                "constraints": 
+                                { 
+                                    "allowedValues": [
+                                    {
+                                        "label": "Premium",
+                                        "description": "Using a App Service Plan Premium SKU and features. Best for production environments.",
+                                        "value": "premium"
+                                    },
+                                    {
+                                        "label": "Consumption",
+                                        "description": "Using a App Service Plan Premium SKU and features. Best for non-production environments.",
+                                        "value": "consumption"
+                                    }
+                                    ],
+                                    "required": true 
+                            }
+                        }           
+                    ]
+                },
+                                {
+                    "name": "sql",
+                    "type": "Microsoft.Common.Section",
+                    "label": "SQL Database",
+                    "elements": [
+                            {
+                                "name": "sqlDetails",
+                                "type": "Microsoft.Common.TextBlock",
+                                "visible": true,
+                                "options": {
+                                    "text": "Pre-configure the SQL Database used for house the CF.Cumulus metadata."
+                                    }
+                            },    
+                            {
+                                "name": "deploySQLDacpac",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Deploy SQL DACPAC",
+                                "defaultValue": false,
+                                "toolTip": "Deploy the SQL DACPAC required for the metadata database objects."
+                            },
+                            {
+                                "name": "myIPAddress",
+                                "type": "Microsoft.Common.TextBox",
+                                "label": "Your External IP Address",
+                                "defaultValue": "0.0.0.0",
+                                "toolTip": "An external IP address that is allowed access to the Azure SQL Database, as part of the logical SQL instance Firewall Rules."
+                            },
+                            {
+                                "name": "allowAzureServices",
+                                "type": "Microsoft.Common.CheckBox",
+                                "label": "Allow Azure Services",
+                                "defaultValue": true,
+                                "toolTip": "Allow Azure services to access the Azure SQL Database, as part of the logical SQL instance Firewall Rules."
+                            }
+                    ]
+                }
+                ]
+            },
+            {
+            "name": "options",
+            "label": "Options",
+            "elements": [
+                {
+                    "name": "optionDetails",
+                    "type": "Microsoft.Common.TextBlock",
+                    "visible": true,
+                    "options": {
+                        "text": "Optional deploy settings covering additional Azure Resources that can be used as part of your CF.Cumulus deployment."
+                        }
+                },
+                {
+                    "name": "deployADF",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Data Factory",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy Azure Data Factory."
+                },
+                {
+                    "name": "deployWorkers",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Worker Data Factory",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a separate Azure Data Factory instance to house Worker and Bootstrap pipelines separately."
+                },
+                {
+                    "name": "deploySQL",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure SQL Database",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure SQL Database to house all metadata."
+                },
+                {
+                    "name": "deployFunction",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Function App",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure Function App."
+                },
+                {
+                    "name": "deployADBWorkspace",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Azure Databricks Workspace",
+                    "defaultValue": true,
+                    "toolTip": "Optionally deploy an Azure Databricks workspace."
+                },
+                {
+                    "name": "setRoleAssignments",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Set Role Assignments",
+                    "defaultValue": true,
+                    "toolTip": "Optionally setup role assignments as part of the deployment."
+                },
+                {
+                    "name": "deployNetworking",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Networking Resources",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a custom VNet for the Azure Databricks workspace."
+                },
+                {
+                    "name": "deployVM",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Deploy Virtual Machine as Data Factory SHIR",
+                    "defaultValue": false,
+                    "toolTip": "Optionally deploy a Virtual Machine to house self-hosted Integration Runtime (IR) for Azure Data Factory."
+                },
+                {
+                    "name": "configureGitHub",
+                    "type": "Microsoft.Common.CheckBox",
+                    "label": "Configure GitHub for Data Factory",
+                    "defaultValue": false,
+                    "toolTip": "Optionally configure GitHub repository for Azure Data Factory."
+                }
+            ]
+            },
+            {
+                "name": "tags",
+                "label": "Tags",
+                "elements": [
+                    {
+                        "name": "tagsByResource",
+                        "type": "Microsoft.Common.TagsByResource",
+                        "resources": [
+                    "Microsoft.DataFactory/factories",
+                    "Microsoft.Sql/servers/databases",
+                    "Microsoft.Sql/servers",
+                    "Microsoft.Web/sites",
+                    "Microsoft.Web/serverfarms",
+                    "Microsoft.KeyVault/vaults",
+                    "Microsoft.OperationalInsights/workspaces",
+                    "Microsoft.Storage/storageAccounts",
+                    "Microsoft.Compute/virtualMachines"
+                        ]
+                    }
+                ]
+            }
+        ],
+        "outputs": {
+            "location": "[location()]",
+            "orgName": "[steps('config').naming.orgName]",
+            "domainName": "[steps('config').naming.domainName]",
+            "envName": "[steps('config').naming.envName]",
+            "datalakeName": "[steps('config').naming.datalakeName]",
+            "functionStorageName": "[steps('config').naming.functionStorageName]",
+            "uniqueIdentifier": "[steps('config').naming.uniqueIdentifier]",
+            "databricksSKU": "[steps('config').compute.databricksSKU]",
+            "aspSKU": "[steps('config').compute.aspSKU]",
+            "deploySQLDacpac": "[steps('config').sql.deploySQLDacpac]",
+            "myIPAddress": "[steps('config').sql.myIPAddress]",
+            "allowAzureServices": "[steps('config').sql.allowAzureServices]",
+            "deployADF": "[steps('options').deployADF]",
+            "deployWorkers": "[steps('options').deployWorkers]",
+            "deploySQL": "[steps('options').deploySQL]",
+            "deployFunction": "[steps('options').deployFunction]",
+            "deployADBWorkspace": "[steps('options').deployADBWorkspace]",
+            "setRoleAssignments": "[steps('options').setRoleAssignments]",
+            "deployNetworking": "[steps('options').deployNetworking]",
+            "deployVM": "[steps('options').deployVM]",
+            "configureGitHub": "[steps('options').configureGitHub]"
+        }
+    }
+}

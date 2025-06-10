@@ -1,0 +1,117 @@
+//to access and use the managed resource group values
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managedResourceGroupId": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource ID of the managed resource group created for the managed application."
+      }
+    },
+    // ...existing parameters...
+  },
+  "variables": {
+    "managedResourceGroupName": "[last(split(parameters('managedResourceGroupId'), '/'))]",
+    // ...existing variables...
+  },
+  // ...existing code...
+}
+
+//variable
+
+  "variables": {
+    "locationShortCodes": {
+      "uksouth": "uks",
+      "ukwest": "ukw",
+      "eastus": "eus",
+      "westus": "wus",
+      "westus2": "wus2",
+      "centralus": "cus",
+      "northcentralus": "ncus",
+      "southcentralus": "scus",
+      "eastus2": "eus2",
+      "westeurope": "weu",
+      "northeurope": "neu",
+      "francecentral": "frc",
+      "germanywestcentral": "gwc",
+      "switzerlandnorth": "swn",
+      "norwayeast": "noe",
+      "brazilsouth": "brs",
+      "canadacentral": "cac",
+      "canadaeast": "cae"
+    },
+    "locationShortCode": "[variables('locationShortCodes')[parameters('location')]]",
+    "namePrefix": "[format('{0}{1}{2}', parameters('orgName'), parameters('domainName'), parameters('envName'))]",
+    "nameSuffix": "[format('{0}{1}', variables('locationShortCode'), parameters('uniqueIdentifier'))]",
+    "rgName": "[resourceGroup().name]"
+  },
+
+
+//add the partner attribution value to the resources top level, ignoring the inner resource array
+{
+    "apiVersion": "2020-06-01",
+    "name": "pid-c7c02b4c-2b89-4086-a4fc-a436ef37c78f-partnercenter",
+    "type": "Microsoft.Resources/deployments",
+    "properties": {
+        "mode": "Incremental",
+        "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "resources": []
+        }
+    }
+}
+
+//add linked template to ADF artifacts
+    {
+      "condition": "[parameters('deployADF')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('adf-artifacts{0}', parameters('deploymentTimestamp'))]",
+      "resourceGroup": "[variables('rgName')]",
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('datafactory-orchestrator{0}', parameters('deploymentTimestamp')))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/adfTemplate.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "factoryName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('datafactory-orchestrator{0}', parameters('deploymentTimestamp'))), '2022-09-01').outputs.name.value]"
+          },
+          "location": {
+            "value": "[parameters('location')]"
+          }
+        }
+      }
+    },
+
+
+
+//call external PowerShell script
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "run-external-script",
+      "location": "[parameters('location')]",
+      "kind": "AzurePowerShell",
+      "properties": {
+        "azPowerShellVersion": "10.4",
+        "timeout": "PT30M",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D",
+        "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\""
+      },
+      "dependsOn": [
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('databricks{0}', parameters('deploymentTimestamp')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('keyvault{0}', parameters('deploymentTimestamp')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('storageaccount{0}', parameters('deploymentTimestamp')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('functionApp{0}', parameters('deploymentTimestamp')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('datafactory-orchestrator{0}', parameters('deploymentTimestamp')))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('sql-server{0}', parameters('deploymentTimestamp')))]"
+      ]
+    }

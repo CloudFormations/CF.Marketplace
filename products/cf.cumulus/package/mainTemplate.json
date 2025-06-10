@@ -1,0 +1,274 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.35.1.17967",
+      "templateHash": "14600197890793401079"
+    }
+  },
+  "parameters": {
+    "orgName": {
+      "type": "string",
+      "defaultValue": "cfc",
+      "metadata": {
+        "description": "The naming prefix for all resources to be deployed."
+      }
+    },
+    "domainName": {
+      "type": "string",
+      "defaultValue": "demo",
+      "metadata": {
+        "description": "The optional middle part naming for all resources to be deployment. Suggested as the business unit, project or domain."
+      }
+    },
+    "envName": {
+      "type": "string",
+      "defaultValue": "dev, tst, prd",
+      "metadata": {
+        "description": "The environment name abbreviation used for the deployment."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "uksouth",
+      "metadata": {
+        "description": "The Azure region where all resources will be deployed."
+      }
+    },
+    "datalakeName": {
+      "type": "string",
+      "defaultValue": "dls",
+      "metadata": {
+        "description": "Optional naming abbreviation for the Azure Data Lake Storage account."
+      }
+    },
+    "functionStorageName": {
+      "type": "string",
+      "defaultValue": "st",
+      "metadata": {
+        "description": "Optional naming abbreviation for the Azure Storage account used to support the Azure Functions App."
+      }
+    },
+    "uniqueIdentifier": {
+      "type": "string",
+      "defaultValue": "01",
+      "metadata": {
+        "description": "The numeric identifier for all resources as a naming suffix, used to differentiate between instances of resources."
+      }
+    },
+    "databricksSKU": {
+      "type": "string",
+      "defaultValue": "Premium",
+      "allowedValues": [
+        "Premium",
+        "Standard"
+      ],
+      "metadata": {
+        "description": "The product SKU for the Azure Databricks workspace."
+      }
+    },
+    "aspSKU": {
+      "type": "string",
+      "defaultValue": "consumption",
+      "allowedValues": [
+        "premium",
+        "consumption"
+      ],
+      "metadata": {
+        "description": "The product SKU for the App Service Plan used by the Azure Function App."
+      }
+    },
+    "deploySQLDacpac": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Deploy the SQL DACPAC required for the metadata database objects."
+      }
+    },
+    "myIPAddress": {
+      "type": "string",
+      "metadata": {
+        "description": "An external IP address that is allowed access to the Azure SQL Database, as part of the logical SQL instance Firewall Rules."
+      }
+    },
+    "allowAzureServices": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Allow Azure services to access the Azure SQL Database, as part of the logical SQL instance Firewall Rules. Required for Azure Data Factory MI authentication."
+      }
+    },
+    "deploymentTimestamp": {
+      "type": "string",
+      "defaultValue": "[utcNow('yy-MM-dd-HHmm')]",
+      "metadata": {
+        "description": "A timestamp format used for the deployment execution naming only. Used to differentiate between instances of resources deployed."
+      }
+    },
+    "deployADF": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optionally deploy Azure Data Factory, if it already exists."
+      }
+    },
+    "deployWorkers": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optionally deploy a separate Azure Data Factory instance to house Worker and Bootstrap pipelines separately."
+      }
+    },
+    "deploySQL": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optionally deploy an Azure SQL Database to house all metadata, if it already exists."
+      }
+    },
+    "deployFunction": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optionally deploy an Azure Function App, if it already exists."
+      }
+    },
+    "deployADBWorkspace": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optionally deploy an Azure Databricks workspace, if it already exists."
+      }
+    },
+    "setRoleAssignments": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Optionally setup role assignments as part of the deployment."
+      }
+    },
+    "deployNetworking": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optionally deploy a custom VNet for the Azure Databricks workspace."
+      }
+    },
+    "deployVM": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optionally deploy a Virtual Machine to house self-hosted Integration Runtime (IR) for Azure Data Factory."
+      }
+    },
+    "configureGitHub": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Optionally configure GitHub repository for Azure Data Factory."
+      }
+    }
+  },
+  "variables": {
+    "locationShortCodes": {
+      "uksouth": "uks",
+      "ukwest": "ukw",
+      "eastus": "eus",
+      "westus": "wus",
+      "westus2": "wus2",
+      "centralus": "cus",
+      "northcentralus": "ncus",
+      "southcentralus": "scus",
+      "eastus2": "eus2",
+      "westeurope": "weu",
+      "northeurope": "neu",
+      "francecentral": "frc",
+      "germanywestcentral": "gwc",
+      "switzerlandnorth": "swn",
+      "norwayeast": "noe",
+      "brazilsouth": "brs",
+      "canadacentral": "cac",
+      "canadaeast": "cae"
+    },
+    "locationShortCode": "[variables('locationShortCodes')[parameters('location')]]",
+    "namePrefix": "[format('{0}{1}{2}', parameters('orgName'), parameters('domainName'), parameters('envName'))]",
+    "nameSuffix": "[format('{0}{1}', variables('locationShortCode'), parameters('uniqueIdentifier'))]",
+    "rgName": "[resourceGroup().name]"
+  },
+  "resources": [
+    {
+        "apiVersion": "2020-06-01",
+        "name": "pid-c7c02b4c-2b89-4086-a4fc-a436ef37c78f-partnercenter",
+        "type": "Microsoft.Resources/deployments",
+        "properties": {
+            "mode": "Incremental",
+            "template": {
+                "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "resources": []
+            }
+        }
+    },    
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "coreTemplateDeployment",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/coreTemplate.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "orgName": { "value": "[parameters('orgName')]" },
+          "domainName": { "value": "[parameters('domainName')]" },
+          "envName": { "value": "[parameters('envName')]" },
+          "location": { "value": "[parameters('location')]" },
+          "datalakeName": { "value": "[parameters('datalakeName')]" },
+          "functionStorageName": { "value": "[parameters('functionStorageName')]" },
+          "uniqueIdentifier": { "value": "[parameters('uniqueIdentifier')]" },
+          "databricksSKU": { "value": "[parameters('databricksSKU')]" },
+          "aspSKU": { "value": "[parameters('aspSKU')]" },
+          "deploySQLDacpac": { "value": "[parameters('deploySQLDacpac')]" },
+          "myIPAddress": { "value": "[parameters('myIPAddress')]" },
+          "allowAzureServices": { "value": "[parameters('allowAzureServices')]" },
+          "deploymentTimestamp": { "value": "[parameters('deploymentTimestamp')]" },
+          "deployADF": { "value": "[parameters('deployADF')]" },
+          "deployWorkers": { "value": "[parameters('deployWorkers')]" },
+          "deploySQL": { "value": "[parameters('deploySQL')]" },
+          "deployFunction": { "value": "[parameters('deployFunction')]" },
+          "deployADBWorkspace": { "value": "[parameters('deployADBWorkspace')]" },
+          "setRoleAssignments": { "value": "[parameters('setRoleAssignments')]" },
+          "deployNetworking": { "value": "[parameters('deployNetworking')]" },
+          "deployVM": { "value": "[parameters('deployVM')]" },
+          "configureGitHub": { "value": "[parameters('configureGitHub')]" }
+        }
+      },
+      "dependsOn": [
+        "pid-c7c02b4c-2b89-4086-a4fc-a436ef37c78f-partnercenter"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deploymentScripts",
+      "apiVersion": "2020-10-01",
+      "name": "run-external-script",
+      "location": "[parameters('location')]",
+      "kind": "AzurePowerShell",
+      "properties": {
+        "azPowerShellVersion": "10.4",
+        "timeout": "PT30M",
+        "cleanupPreference": "OnSuccess",
+        "retentionInterval": "P1D",
+        "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_marketplace/infrastructure/marketplace/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\""
+      },
+      "dependsOn": [
+        "coreTemplateDeployment"
+      ]
+    }
+  ],
+  "outputs": {
+  }
+}
