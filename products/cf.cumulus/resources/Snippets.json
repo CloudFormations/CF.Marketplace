@@ -82,9 +82,6 @@
         "parameters": {
           "factoryName": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', format('datafactory-orchestrator{0}', parameters('deploymentTimestamp'))), '2022-09-01').outputs.name.value]"
-          },
-          "location": {
-            "value": "[parameters('location')]"
           }
         }
       }
@@ -95,7 +92,7 @@
 //call external PowerShell script
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2023-08-01",
       "name": "run-external-script",
       "location": "[parameters('location')]",
       "kind": "AzurePowerShell",
