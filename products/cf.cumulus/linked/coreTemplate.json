@@ -100,8 +100,7 @@
     "locationShortCode": "[variables('locationShortCodes')[parameters('location')]]",
     "namePrefix": "[format('{0}{1}{2}', parameters('orgName'), parameters('domainName'), parameters('envName'))]",
     "nameSuffix": "[format('{0}{1}', variables('locationShortCode'), parameters('uniqueIdentifier'))]",
-    "rgName": "[resourceGroup().name]",
-    "databricksManagedRgName": "[concat(resourceGroup().name,'-Dbw')]"
+    "rgName": "[resourceGroup().name]"
   },
   "resources": [
     {
@@ -1889,7 +1888,7 @@
           },
           "variables": {
             "workspaceName": "[format('{0}dbw{1}', parameters('namePrefix'), parameters('nameSuffix'))]",
-            "managedResourceGroupName": "[variables('databricksManagedRgName')]",
+            "managedResourceGroupName": "[concat(resourceGroup().name,'-Dbw')]",
             "subnets": {
               "controlPlane": "[format('{0}snet-control{1}', parameters('namePrefix'), parameters('nameSuffix'))]",
               "workerNodes": "[format('{0}snet-worker{1}', parameters('namePrefix'), parameters('nameSuffix'))]"
