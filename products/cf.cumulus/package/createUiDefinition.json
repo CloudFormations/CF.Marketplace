@@ -1,5 +1,5 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.cumulus.json#",
+    "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
@@ -47,7 +47,13 @@
                                 "label": "Product Name Prefix Code",
                                 "defaultValue": "cf",
                                 "toolTip": "The naming prefix for all resources to be deployed.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 4,
+                                    "regex": "^[a-zA-Z0-9]{2,4}$",
+                                    "validationMessage": "Prefix must be 2-4 alphanumeric characters with no spaces or special characters."
+                                }
                             },
                             {
                                 "name": "domainName",
@@ -55,7 +61,13 @@
                                 "label": "Product Name",
                                 "defaultValue": "cumulus",
                                 "toolTip": "The optional middle part naming for all resources to be deployed. Suggested as the business unit, project or domain.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 8,
+                                    "regex": "^[a-zA-Z0-9]{2,8}$",
+                                    "validationMessage": "Prefix must be 2-8 alphanumeric characters with no spaces or special characters."
+                                }
                             },
                             {
                                 "name": "envName",
@@ -63,7 +75,13 @@
                                 "label": "Environment Name",
                                 "defaultValue": "dev",
                                 "toolTip": "The environment name abbreviation used for the deployment.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 4,
+                                    "regex": "^[a-zA-Z0-9]{2,4}$",
+                                    "validationMessage": "Prefix must be 2-4 alphanumeric characters with no spaces or special characters."
+                                }
                             },
                             {
                                 "name": "datalakeName",
@@ -71,7 +89,13 @@
                                 "label": "Data Lake Storage Name Suffix",
                                 "defaultValue": "dls",
                                 "toolTip": "Optional naming abbreviation for the Azure Data Lake Storage account.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 3,
+                                    "regex": "^[a-zA-Z0-9]{2,3}$",
+                                    "validationMessage": "Prefix must be 2-3 alphanumeric characters with no spaces or special characters."
+                                }
                             },
                             {
                                 "name": "functionStorageName",
@@ -79,7 +103,13 @@
                                 "label": "Function App Storage Name Suffix",
                                 "defaultValue": "st",
                                 "toolTip": "Optional naming abbreviation for the Azure Storage account used to support the Azure Functions App.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 3,
+                                    "regex": "^[a-zA-Z0-9]{2,3}$",
+                                    "validationMessage": "Prefix must be 2-3 alphanumeric characters with no spaces or special characters."
+                                }
                             },
                                                         {
                                 "name": "uniqueIdentifier",
@@ -87,7 +117,13 @@
                                 "label": "Numeric Identifier",
                                 "defaultValue": "01",
                                 "toolTip": "The numeric identifier for all resources as a naming suffix, used to differentiate between instances of resources.",
-                                "constraints": { "required": true }
+                                "constraints": {
+                                    "required": true,
+                                    "minLength": 2,
+                                    "maxLength": 3,
+                                    "regex": "^[0-9]{2,3}$",
+                                    "validationMessage": "Identifier must be 2 or 3 numeric digits only."
+                                }
                             }
                     ]
                 },
@@ -177,7 +213,12 @@
                                 "type": "Microsoft.Common.TextBox",
                                 "label": "Your External IP Address",
                                 "defaultValue": "0.0.0.0",
-                                "toolTip": "An external IP address that is allowed access to the Azure SQL Database, as part of the logical SQL instance Firewall Rules."
+                                "toolTip": "An external IP address that is allowed access to the Azure SQL Database, as part of the logical SQL instance Firewall Rules.",
+                                "constraints": {
+                                    "required": true,
+                                    "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$",
+                                    "validationMessage": "Please enter a valid IPv4 address (e.g., 123.45.67.89)."
+                                }                                
                             },
                             {
                                 "name": "allowAzureServices",
@@ -197,16 +238,17 @@
                     {
                         "name": "tagsByResource",
                         "type": "Microsoft.Common.TagsByResource",
+                        "toolTip": "Assign tags to individual Azure Resources for cost management, organization, and governance.",
                         "resources": [
-                    "Microsoft.DataFactory/factories",
-                    "Microsoft.Sql/servers/databases",
-                    "Microsoft.Sql/servers",
-                    "Microsoft.Web/sites",
-                    "Microsoft.Web/serverfarms",
-                    "Microsoft.KeyVault/vaults",
-                    "Microsoft.OperationalInsights/workspaces",
-                    "Microsoft.Storage/storageAccounts",
-                    "Microsoft.Compute/virtualMachines"
+                            "Microsoft.DataFactory/factories",
+                            "Microsoft.Sql/servers/databases",
+                            "Microsoft.Sql/servers",
+                            "Microsoft.Web/sites",
+                            "Microsoft.Web/serverfarms",
+                            "Microsoft.KeyVault/vaults",
+                            "Microsoft.OperationalInsights/workspaces",
+                            "Microsoft.Storage/storageAccounts",
+                            "Microsoft.Compute/virtualMachines"
                         ]
                     }
                 ]

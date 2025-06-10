@@ -32,7 +32,7 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "uksouth",
+      "defaultValue": "global",
       "metadata": {
         "description": "The Azure region where all resources will be deployed."
       }
@@ -172,29 +172,6 @@
     }
   },
   "variables": {
-    "locationShortCodes": {
-      "uksouth": "uks",
-      "ukwest": "ukw",
-      "eastus": "eus",
-      "westus": "wus",
-      "westus2": "wus2",
-      "centralus": "cus",
-      "northcentralus": "ncus",
-      "southcentralus": "scus",
-      "eastus2": "eus2",
-      "westeurope": "weu",
-      "northeurope": "neu",
-      "francecentral": "frc",
-      "germanywestcentral": "gwc",
-      "switzerlandnorth": "swn",
-      "norwayeast": "noe",
-      "brazilsouth": "brs",
-      "canadacentral": "cac",
-      "canadaeast": "cae"
-    },
-    "locationShortCode": "[variables('locationShortCodes')[parameters('location')]]",
-    "namePrefix": "[format('{0}{1}{2}', parameters('orgName'), parameters('domainName'), parameters('envName'))]",
-    "nameSuffix": "[format('{0}{1}', variables('locationShortCode'), parameters('uniqueIdentifier'))]",
     "rgName": "[resourceGroup().name]"
   },
   "resources": [
@@ -253,7 +230,7 @@
     },
     {
       "type": "Microsoft.Resources/deploymentScripts",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2023-08-01",
       "name": "run-external-script",
       "location": "[parameters('location')]",
       "kind": "AzurePowerShell",
