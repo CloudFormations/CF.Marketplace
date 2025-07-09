@@ -172,7 +172,30 @@
     }
   },
   "variables": {
-    "rgName": "[resourceGroup().name]"
+    "locationShortCodes": {
+      "uksouth": "uks",
+      "ukwest": "ukw",
+      "eastus": "eus",
+      "westus": "wus",
+      "westus2": "wus2",
+      "centralus": "cus",
+      "northcentralus": "ncus",
+      "southcentralus": "scus",
+      "eastus2": "eus2",
+      "westeurope": "weu",
+      "northeurope": "neu",
+      "francecentral": "frc",
+      "germanywestcentral": "gwc",
+      "switzerlandnorth": "swn",
+      "norwayeast": "noe",
+      "brazilsouth": "brs",
+      "canadacentral": "cac",
+      "canadaeast": "cae"
+    },
+    "locationShortCode": "[variables('locationShortCodes')[parameters('location')]]",
+    "namePrefix": "[format('{0}{1}{2}', parameters('orgName'), parameters('domainName'), parameters('envName'))]",
+    "nameSuffix": "[format('{0}{1}', variables('locationShortCode'), parameters('uniqueIdentifier'))]",
+    "rgName": "[format('{0}rg{1}', variables('namePrefix'), variables('nameSuffix'))]"
   },
   "resources": [
     {
