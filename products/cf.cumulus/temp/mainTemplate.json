@@ -32,7 +32,7 @@
     },
     "location": {
       "type": "string",
-      "defaultValue": "global",
+      "defaultValue": "uksouth",
       "metadata": {
         "description": "The Azure region where all resources will be deployed."
       }
