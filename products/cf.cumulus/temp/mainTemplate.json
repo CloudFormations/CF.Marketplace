@@ -138,28 +138,7 @@
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "PT1H",
               "arguments": "[concat('-tenantId ', subscription().tenantId, ' -subscriptionId ', subscription().subscriptionId, ' -location ', parameters('location'), ' -resourcePrefix ', variables('namePrefix'), ' -resourceSuffix ', variables('nameSuffix'), ' -resourceGroupName ', variables('rgName'))]",
-              "scriptContent": "
-                param(
-                  [Parameter(Mandatory=$true)]
-                  [string] $tenantId,
-
-                  [Parameter(Mandatory=$true)]
-                  [string] $subscriptionId,
-
-                  [Parameter(Mandatory=$true)]
-                  [string] $location,
-
-                  [Parameter(Mandatory=$true)]
-                  [string] $resourcePrefix,
-
-                  [Parameter(Mandatory=$true)]
-                  [string] $resourceSuffix,
-
-                  [Parameter(Mandatory=$false)]
-                  [string] $resourceGroupName
-                )
-                Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $tenantId -subscriptionId $subscriptionId -location $location -resourcePrefix $resourcePrefix -resourceSuffix $resourceSuffix -resourceGroupName $resourceGroupName
-                "
+              "scriptContent": "param(\n  [Parameter(Mandatory=$true)]\n  [string] $tenantId,\n\n  [Parameter(Mandatory=$true)]\n  [string] $subscriptionId,\n\n  [Parameter(Mandatory=$true)]\n  [string] $location,\n\n  [Parameter(Mandatory=$true)]\n  [string] $resourcePrefix,\n\n  [Parameter(Mandatory=$true)]\n  [string] $resourceSuffix,\n\n  [Parameter(Mandatory=$false)]\n  [string] $resourceGroupName\n)\nInvoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $tenantId -subscriptionId $subscriptionId -location $location -resourcePrefix $resourcePrefix -resourceSuffix $resourceSuffix -resourceGroupName $resourceGroupName"
               }
             }
             ]
