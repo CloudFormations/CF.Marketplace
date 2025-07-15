@@ -49,6 +49,7 @@ $tempPath = "$env:TEMP\deploymentFiles"
 Invoke-WebRequest -Uri $zipUrl -OutFile "$tempPath.zip"
 Expand-Archive -Path "$tempPath.zip" -DestinationPath $tempPath -Force
 
+Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 
 # Download the dotnet-install script
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
@@ -101,6 +102,7 @@ $databricksDetails = az ad sp list --query "[?displayName=='AzureDatabricks']" |
 az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionIdValue/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 
+
 # Deploy the C# Functions to the Function App
 
 # This command cleans the build output of the specified project using the Release configuration.
@@ -132,6 +134,7 @@ $Env:DATAFACTORY = $dataFactoryName
 $Env:FUNCTIONAPP = $functionAppName 
 $Env:KEYVAULT = $keyVaultName 
 
+Write-Host "Functions deployed successfully."
 
 # Deploy Data Factory objects to Data Factory
 
@@ -153,6 +156,7 @@ $options.Excludes.Add("factory.*","")
 
 Publish-AdfV2FromJson -RootFolder "$scriptPath" -ResourceGroupName "$resourceGroupName" -DataFactoryName "$dataFactoryName" -Location "$location" -Option $options -Stage "install"
 
+Write-Host "Data Factory components deployed successfully."
 
 # Deploy Databricks Resources
     # Includes: Create PAT
@@ -228,7 +232,7 @@ Set-Location -Path $sourcePath
 databricks bundle deploy --target DEFAULT
 Set-Location -Path $revertPath
 
-
+Write-Host "Databricks resources deployed successfully."
 
 # Deploy the SQL Server Metadata objects
 
@@ -265,6 +269,8 @@ SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.transform.dac
 $userDetails = az ad signed-in-user show --query userPrincipalName --output tsv
 $userId = az ad signed-in-user show --query id --output tsv
 az sql server ad-admin create --resource-group $resourceGroupName --server $sqlServerName --display-name $userDetails --object-id $userId
+
+Write-Host "SQL server metadata objects deployed successfully."
 
 # Create permissions for ADF on the SQL Instance, including a user, role and assigment of user to the role
 Import-Module SQLServer
@@ -324,4 +330,5 @@ $sqlPassword = $null
 # Upgrade script functionality: Delete current IP address from Firewall
 az sql server firewall-rule delete  -g $resourceGroupName -s $sqlServerName -n CumulusDeploymentIPRequirement
 
+Write-Host "ADF PErmissions added to SQL Server successfully."
 Write-Host "Deployment complete."
