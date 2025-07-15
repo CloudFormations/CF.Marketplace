@@ -42,6 +42,8 @@ param(
     [string] $databricksNamingConvention = 'dbw'
 )
 
+Write-Host "Attempting to download and install post-deployment script artifacts..."
+
 # Download and unzip the post-deployment artifact files from the repo
 $zipUrl = "https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_postdeployment/temp/postdeploy_artifacts.zip"
 $tempPath = "$env:TEMP\deploymentFiles"
@@ -59,6 +61,8 @@ dotnet --version
 
 # install the sqlserver module
 Install-Module -Name SqlServer
+
+Write-Host "Installed dotnet and SqlServer modules."
 
 # Login to the Azure Tenant
 az login --tenant $tenantId
@@ -80,6 +84,7 @@ $sqlDatabaseName = $resourcePrefix + $sqlDatabaseNamingConvention + $resourceSuf
 $databricksWorkspaceName = $resourcePrefix + $databricksNamingConvention + $resourceSuffix
 
 $currentLocation = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+Write-Host "Current location: $currentLocation"
 
 # Get Subscription Id from Name
 $subscriptionDetails = az account subscription list | ConvertFrom-Json | Where-Object { $_.displayName -eq $subscriptionId }
@@ -102,7 +107,7 @@ $databricksDetails = az ad sp list --query "[?displayName=='AzureDatabricks']" |
 az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionIdValue/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 
-
+Write-Host "Attempting to deploy Functions to the function app: $functionAppName"
 # Deploy the C# Functions to the Function App
 
 # This command cleans the build output of the specified project using the Release configuration.
@@ -121,6 +126,7 @@ Compress-Archive -Path $sourcePath -DestinationPath ./funcapp.zip -Update
 # Deploying the zip to the functionapp
 az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src ./funcapp.zip
 
+Write-Host "Attempting to add the Function App Key to Azure Key Vault secrets."
 # Add Function App Key to Azure Key Vault secrets with the name cumulusfunctionsKey
 $functionAppKeys = az functionapp keys list -g $resourceGroupName -n $functionAppName | ConvertFrom-Json 
 $functionAppMasterKey = $functionAppKeys.masterKey
@@ -134,8 +140,8 @@ $Env:DATAFACTORY = $dataFactoryName
 $Env:FUNCTIONAPP = $functionAppName 
 $Env:KEYVAULT = $keyVaultName 
 
-Write-Host "Functions deployed successfully."
-
+Write-Host "Functions and function app key deployed successfully."
+Write-Host "Attempting to deploy Data Factory objects to Data Factory: $dataFactoryName"
 # Deploy Data Factory objects to Data Factory
 
 # Install-Module -Name "Az.DataFactory"
@@ -156,8 +162,8 @@ $options.Excludes.Add("factory.*","")
 
 Publish-AdfV2FromJson -RootFolder "$scriptPath" -ResourceGroupName "$resourceGroupName" -DataFactoryName "$dataFactoryName" -Location "$location" -Option $options -Stage "install"
 
-Write-Host "Data Factory components deployed successfully."
-
+Write-Host "Data Factory objects deployed successfully."
+Write-Host "Attempting to deploy Databricks resources to Databricks Workspace: $databricksWorkspaceName"
 # Deploy Databricks Resources
     # Includes: Create PAT
     # Includes: Create Secret Scope
@@ -233,7 +239,7 @@ databricks bundle deploy --target DEFAULT
 Set-Location -Path $revertPath
 
 Write-Host "Databricks resources deployed successfully."
-
+Write-Host "Attempting to deploy SQL Server Metadata objects to SQL Server: $sqlServerName"
 # Deploy the SQL Server Metadata objects
 
 # Upgrade script functionality: Add current IP address to Firewall
@@ -271,7 +277,7 @@ $userId = az ad signed-in-user show --query id --output tsv
 az sql server ad-admin create --resource-group $resourceGroupName --server $sqlServerName --display-name $userDetails --object-id $userId
 
 Write-Host "SQL server metadata objects deployed successfully."
-
+Write-Host "Attempting to add ADF Permissions to SQL Server: $sqlServerName"
 # Create permissions for ADF on the SQL Instance, including a user, role and assigment of user to the role
 Import-Module SQLServer
 Import-Module Az.Accounts -MinimumVersion 2.2.0
@@ -330,5 +336,5 @@ $sqlPassword = $null
 # Upgrade script functionality: Delete current IP address from Firewall
 az sql server firewall-rule delete  -g $resourceGroupName -s $sqlServerName -n CumulusDeploymentIPRequirement
 
-Write-Host "ADF PErmissions added to SQL Server successfully."
-Write-Host "Deployment complete."
+Write-Host "ADF Permissions added to SQL Server successfully."
+Write-Host "Post Deployment complete."
