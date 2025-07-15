@@ -138,7 +138,7 @@
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "PT1H",
               "arguments": "[concat('-tenantId ', subscription().tenantId, ' -subscriptionId ', subscription().subscriptionId, ' -location ', parameters('location'), ' -resourcePrefix ', variables('namePrefix'), ' -resourceSuffix ', variables('nameSuffix'), ' -resourceGroupName ', variables('rgName'))]",
-              "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $env:tenantId -subscriptionId $env:subscriptionId -location $env:location -resourcePrefix $env:resourcePrefix -resourceSuffix $env:resourceSuffix -resourceGroupName $env:resourceGroupName"
+              "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $tenantId -subscriptionId $subscriptionId -location $location -resourcePrefix $resourcePrefix -resourceSuffix $resourceSuffix -resourceGroupName $resourceGroupName"
               }
             }
             ]
