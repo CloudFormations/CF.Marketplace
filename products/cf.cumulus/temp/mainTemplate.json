@@ -11,21 +11,21 @@
   "parameters": {
     "orgName": {
       "type": "string",
-      "defaultValue": "cfc",
+      "defaultValue": "cf",
       "metadata": {
         "description": "The naming prefix for all resources to be deployed."
       }
     },
     "domainName": {
       "type": "string",
-      "defaultValue": "demo",
+      "defaultValue": "deployment",
       "metadata": {
         "description": "The optional middle part naming for all resources to be deployment. Suggested as the business unit, project or domain."
       }
     },
     "envName": {
       "type": "string",
-      "defaultValue": "dev, tst, prd",
+      "defaultValue": "tst",
       "metadata": {
         "description": "The environment name abbreviation used for the deployment."
       }
