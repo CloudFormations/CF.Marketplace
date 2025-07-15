@@ -116,20 +116,36 @@
   },
   "resources": [
     {
-        "type": "Microsoft.Resources/deploymentScripts",
-        "apiVersion": "2023-08-01",
-        "name": "run-external-script",
-        "location": "[parameters('location')]",
-        "kind": "AzurePowerShell",
-        "properties": {
-            "azPowerShellVersion": "10.4",
-            "timeout": "PT30M",
-            "cleanupPreference": "OnSuccess",
-            "retentionInterval": "P1H",
-            "arguments": "[concat('-tenantId ', subscription().tenantId, ' -subscriptionId ', subscription().subscriptionId, ' -location ', parameters('location'), ' -resourcePrefix ', variables('namePrefix'), ' -resourceSuffix ', variables('nameSuffix'), ' -resourceGroupName ', variables('rgName'))]",
-            "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $env:tenantId -subscriptionId $env:subscriptionId -location $env:location -resourcePrefix $env:resourcePrefix -resourceSuffix $env:resourceSuffix -resourceGroupName $env:resourceGroupName"
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "nested-deployment",
+      "location": "[parameters('location')]",
+      "resourceGroup": "[variables('rgName')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+          "type": "Microsoft.Resources/deploymentScripts",
+          "apiVersion": "2023-08-01",
+          "name": "run-external-script",
+          "location": "[parameters('location')]",
+          "kind": "AzurePowerShell",
+          "properties": {
+              "azPowerShellVersion": "10.4",
+              "timeout": "PT30M",
+              "cleanupPreference": "OnSuccess",
+              "retentionInterval": "P1H",
+              "arguments": "[concat('-tenantId ', subscription().tenantId, ' -subscriptionId ', subscription().subscriptionId, ' -location ', parameters('location'), ' -resourcePrefix ', variables('namePrefix'), ' -resourceSuffix ', variables('nameSuffix'), ' -resourceGroupName ', variables('rgName'))]",
+              "scriptContent": "Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/CloudFormations/CF.Marketplace/refs/heads/develop_powershell/products/cf.cumulus/temp/postDeploymentsScript.ps1' -OutFile \"$env:TEMP\\postDeploymentsScript.ps1\"; . \"$env:TEMP\\postDeploymentsScript.ps1\" -tenantId $env:tenantId -subscriptionId $env:subscriptionId -location $env:location -resourcePrefix $env:resourcePrefix -resourceSuffix $env:resourceSuffix -resourceGroupName $env:resourceGroupName"
+              }
+            }
+            ]
+          }
         }
-    }
+      }
   ],
   "outputs": {
   }
