@@ -45,7 +45,7 @@ param(
 Write-Host "Attempting to download and install post-deployment script artifacts..."
 
 # Download and unzip the post-deployment artifact files from the repo
-$zipUrl = "https://raw.githubusercontent.com/CloudFormations/CF.Cumulus/refs/heads/develop_postdeployment/temp/postdeploy_artifacts.zip"
+$zipUrl = "https://github.com/CloudFormations/CF.Marketplace/raw/refs/heads/develop_powershell/products/cf.cumulus/temp/postdeploy_artifacts.zip"
 $tempPath = "$env:TEMP\deploymentFiles"
 
 Invoke-WebRequest -Uri $zipUrl -OutFile "$tempPath.zip"
