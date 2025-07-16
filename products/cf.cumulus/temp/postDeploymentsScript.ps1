@@ -59,10 +59,10 @@ $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 Write-Host "OS Architecture: $architecture"
 
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-.\dotnet-install.ps1 -InstallDir "$env:USERPROFILE\.dotnet" -Architecture $architecture -NoPath
-$env:PATH = "$env:USERPROFILE\.dotnet;$env:USERPROFILE\.dotnet\tools;$env:PATH"
-(Get-Command dotnet).Source | Write-Host "Dotnet installed at:"
-dotnet --version
+$dotnetInstallDir = "$env:USERPROFILE\.dotnet"
+.\dotnet-install.ps1 -InstallDir $dotnetInstallDir -Architecture $architecture -NoPath
+$env:PATH = "$dotnetInstallDir;$dotnetInstallDir\tools;$env:PATH"
+& "$dotnetInstallDir\dotnet.exe" --version
 
 # install the sqlserver module
 Install-Module -Name SqlServer
@@ -117,7 +117,7 @@ Write-Host "Attempting to deploy Functions to the function app: $functionAppName
 
 # This command cleans the build output of the specified project using the Release configuration.
 # Generates full paths in the output, and suppresses the summary in the console logger
-$functionAppPath = "deploymentFiles\azure.functionapp"
+$functionAppPath = "deploymentFiles\postdeploy_artifacts\azure.functionapp"
 dotnet clean $functionAppPath --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary
 
 # Package the function app including the functions into a folder for deployment
@@ -157,7 +157,7 @@ Import-Module -Name "Az.DataFactory"
 Import-Module -Name azure.datafactory.tools
 
 # Get Deployment Objects and Params files
-$scriptPath = "deploymentFiles\azure.datafactory"
+$scriptPath = "deploymentFiles\postdeploy_artifacts\azure.datafactory"
 
 $options = New-AdfPublishOption
 $options.CreateNewInstance = $false # New ADF workspace deployment not required.
@@ -234,7 +234,7 @@ databricks clusters create --json $clusterJSON --profile DEFAULT
 
 
 # Programmatically find databricks folder path in Repo
-$scriptPath = "deploymentFiles\azure.databricks"
+$scriptPath = "deploymentFiles\postdeploy_artifacts\azure.databricks"
 $revertPath = Get-Location
 
 # Deploy Notebooks to Workspace 
@@ -261,7 +261,7 @@ $sqlLogin = az keyvault secret show --name $sqlUsernameSecret --vault-name $keyV
 
 $sqlPassword = az keyvault secret show --name $sqlValueSecret --vault-name $keyVaultName --query "value"
 
-$sourceFolderPath = "deploymentFiles"
+$sourceFolderPath = "deploymentFiles\postdeploy_artifacts"
 
 # Publish the common schema DacPac
 SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.common.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" /v:DatabricksWSName=$databricksWorkspaceName /v:DatabricksHost="https://$databricksWorkspaceURL" /v:DLSName=$storageAccountName  /v:Environment="Dev"  /v:KeyVaultName=$keyVaultName  /v:RGName=$resourceGroupName /v:SubscriptionID=$subscriptionIdValue 
