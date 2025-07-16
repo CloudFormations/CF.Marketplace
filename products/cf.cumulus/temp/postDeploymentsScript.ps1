@@ -54,9 +54,11 @@ Expand-Archive -Path "$tempPath.zip" -DestinationPath $tempPath -Force
 Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 
 # Download the dotnet-install script
-Install-Module CimCmdlets
+
+$architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-.\dotnet-install.ps1 -InstallDir "$HOME\.dotnet"
+.\dotnet-install.ps1 -InstallDir "$HOME\.dotnet" -Architecture $architecture
 $env:PATH = "$HOME\.dotnet;$HOME\.dotnet\tools;$env:PATH"
 dotnet --version
 
