@@ -58,22 +58,17 @@ Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 Write-Host "OS Architecture: $architecture"
 
-Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+$dotnetInstallDir = "$HOME/.dotnet"
+Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile "dotnet-install.sh"
 
-if ($IsWindows) {
-    $dotnetInstallDir = "$env:USERPROFILE\.dotnet"
-} else {
-    $dotnetInstallDir = "$HOME/.dotnet"
-}
-
-.\dotnet-install.ps1 -InstallDir $dotnetInstallDir -Architecture $architecture -NoPath
-$env:PATH = "$dotnetInstallDir;$dotnetInstallDir\tools;$env:PATH"
-& "$dotnetInstallDir\dotnet.exe" --version
+bash ./dotnet-install.sh -InstallDir $dotnetInstallDir --architecture $architecture --no-path
+$env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
+dotnet --version
 
 # install the sqlserver module
 Install-Module -Name SqlServer
 
-Write-Host "Installed dotnet and SqlServer modules."
+Write-Host "Installed required modules."
 
 # Login to the Azure Tenant
 az login --tenant $tenantId
