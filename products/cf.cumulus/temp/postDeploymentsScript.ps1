@@ -59,7 +59,13 @@ $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 Write-Host "OS Architecture: $architecture"
 
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
-$dotnetInstallDir = "$env:USERPROFILE\.dotnet"
+
+if ($IsWindows) {
+    $dotnetInstallDir = "$env:USERPROFILE\.dotnet"
+} else {
+    $dotnetInstallDir = "$HOME/.dotnet"
+}
+
 .\dotnet-install.ps1 -InstallDir $dotnetInstallDir -Architecture $architecture -NoPath
 $env:PATH = "$dotnetInstallDir;$dotnetInstallDir\tools;$env:PATH"
 & "$dotnetInstallDir\dotnet.exe" --version
