@@ -56,17 +56,21 @@ Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 # Download the dotnet-install script
 
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-Write-Host "OS Architecture: $architecture"
 
 $dotnetInstallDir = "$HOME/.dotnet"
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile "dotnet-install.sh"
 
-bash ./dotnet-install.sh -InstallDir $dotnetInstallDir --architecture $architecture --no-path
+bash ./dotnet-install.sh -InstallDir $dotnetInstallDir --architecture $architecture
 $env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
 & "$dotnetInstallDir/dotnet" --version
 
-# install the sqlserver module
-Install-Module -Name SqlServer
+# install other modules
+Install-Module -Name SqlServer -Force
+Install-Module -Name Az -Force
+Install-Module -Name Az.DataFactory -Force
+Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
+Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force
+
 
 Write-Host "Installed required modules."
 
@@ -119,11 +123,11 @@ Write-Host "Attempting to deploy Functions to the function app: $functionAppName
 # This command cleans the build output of the specified project using the Release configuration.
 # Generates full paths in the output, and suppresses the summary in the console logger
 $functionAppPath = "deploymentFiles\postdeploy_artifacts\azure.functionapp"
-dotnet clean $functionAppPath --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary
+& "$dotnetInstallDir/dotnet" clean $functionAppPath --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary
 
 # Package the function app including the functions into a folder for deployment
 $publishPath = $currentLocation + '\publishFunctions'
-dotnet publish $functionAppPath --configuration Release --output $publishPath
+& "$dotnetInstallDir/dotnet" publish $functionAppPath --configuration Release --output $publishPath
 
 # Compressing the publish folder into a zip file
 $sourcePath = $publishPath + '/*'
@@ -150,12 +154,6 @@ Write-Host "Functions and function app key deployed successfully."
 Write-Host "Attempting to deploy Data Factory objects to Data Factory: $dataFactoryName"
 # Deploy Data Factory objects to Data Factory
 
-# Install-Module -Name "Az.DataFactory"
-Import-Module -Name "Az.DataFactory"
-
-# https://github.com/Azure-Player/azure.datafactory.tools/
-# Install-Module -Name azure.datafactory.tools -Scope CurrentUser
-Import-Module -Name azure.datafactory.tools
 
 # Get Deployment Objects and Params files
 $scriptPath = "deploymentFiles\postdeploy_artifacts\azure.datafactory"
@@ -285,8 +283,6 @@ az sql server ad-admin create --resource-group $resourceGroupName --server $sqlS
 Write-Host "SQL server metadata objects deployed successfully."
 Write-Host "Attempting to add ADF Permissions to SQL Server: $sqlServerName"
 # Create permissions for ADF on the SQL Instance, including a user, role and assigment of user to the role
-Import-Module SQLServer
-Import-Module Az.Accounts -MinimumVersion 2.2.0
 
 $accessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
