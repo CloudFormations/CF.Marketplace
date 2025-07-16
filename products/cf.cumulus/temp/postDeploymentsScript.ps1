@@ -63,7 +63,7 @@ Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile "dotnet-i
 
 bash ./dotnet-install.sh -InstallDir $dotnetInstallDir --architecture $architecture --no-path
 $env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
-dotnet --version
+& "$dotnetInstallDir/dotnet" --version
 
 # install the sqlserver module
 Install-Module -Name SqlServer
