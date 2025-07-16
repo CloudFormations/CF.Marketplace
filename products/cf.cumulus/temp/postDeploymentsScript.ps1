@@ -71,6 +71,7 @@ Install-Module -Name Az.DataFactory -Force
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force
 
+Get-Module -ListAvailable
 
 Write-Host "Installed required modules."
 
