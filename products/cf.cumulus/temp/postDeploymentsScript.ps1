@@ -56,7 +56,7 @@ Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 # Download the dotnet-install script
 
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-Write-Host "Architecture: $architecture"
+Write-Host "OS Architecture: $architecture"
 
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
 .\dotnet-install.ps1 -InstallDir "$env:USERPROFILE\.dotnet" -Architecture $architecture -NoPath
