@@ -61,6 +61,7 @@ Write-Host "OS Architecture: $architecture"
 Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
 .\dotnet-install.ps1 -InstallDir "$env:USERPROFILE\.dotnet" -Architecture $architecture -NoPath
 $env:PATH = "$env:USERPROFILE\.dotnet;$env:USERPROFILE\.dotnet\tools;$env:PATH"
+(Get-Command dotnet).Source | Write-Host "Dotnet installed at:"
 dotnet --version
 
 # install the sqlserver module
