@@ -65,11 +65,11 @@ $env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
 & "$dotnetInstallDir/dotnet" --version
 
 # install other modules
-Install-Module -Name SqlServer -Force
-Install-Module -Name Az -Force
-Install-Module -Name Az.DataFactory -Force
+Install-Module -Name SqlServer -Force -Scope CurrentUser
+Install-Module -Name Az -Force -Scope CurrentUser
+Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
-Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force
+Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
 Import-Module -Name SqlServer
 Import-Module -Name Az
