@@ -73,7 +73,6 @@ Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
 Get-ChildItem -Path /root/.local/share/powershell/Modules -Recurse -Filter *.psd1
 
-Import-Module -Name SqlServer -Verbose
 Import-Module -Name Az
 Import-Module -Name Az.DataFactory
 Import-Module -Name azure.datafactory.tools
@@ -290,6 +289,7 @@ az sql server ad-admin create --resource-group $resourceGroupName --server $sqlS
 Write-Host "SQL server metadata objects deployed successfully."
 Write-Host "Attempting to add ADF Permissions to SQL Server: $sqlServerName"
 # Create permissions for ADF on the SQL Instance, including a user, role and assigment of user to the role
+Import-Module -Name SqlServer -Verbose
 
 $accessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
