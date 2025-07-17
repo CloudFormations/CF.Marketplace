@@ -71,10 +71,10 @@ Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
-Import-Module -Name Az
-Import-Module -Name Az.DataFactory
-Import-Module -Name azure.datafactory.tools
-Import-Module -Name Az.Accounts
+Import-Module -Name Az -Verbose
+Import-Module -Name Az.DataFactory -Verbose
+Import-Module -Name azure.datafactory.tools -Verbose
+Import-Module -Name Az.Accounts -Verbose
 
 Write-Host "Installed required modules."
 
