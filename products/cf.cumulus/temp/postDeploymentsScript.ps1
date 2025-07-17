@@ -71,7 +71,9 @@ Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
-bash curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+Invoke-WebRequest -Uri "https://aka.ms/InstallAzureCLIDeb" -OutFile "azurecli-install.sh"
+bash ./azurecli-install.sh
+az --version
 
 Write-Host "Installed required modules."
 
