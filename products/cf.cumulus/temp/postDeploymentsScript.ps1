@@ -71,7 +71,11 @@ Install-Module -Name Az.DataFactory -Force
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force
 
-Get-Module -ListAvailable
+Import-Module -Name SqlServer
+Import-Module -Name Az
+Import-Module -Name Az.DataFactory
+Import-Module -Name azure.datafactory.tools
+Import-Module -Name Az.Accounts
 
 Write-Host "Installed required modules."
 
