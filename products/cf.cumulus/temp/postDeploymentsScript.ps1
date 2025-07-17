@@ -71,10 +71,9 @@ Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
-Get-Module -ListAvailable
-$env:PSModulePath -split ":"
+Get-ChildItem -Path /root/.local/share/powershell/Modules -Recurse -Filter *.psd1
 
-Import-Module -Name SqlServer
+Import-Module -Name SqlServer -Verbose
 Import-Module -Name Az
 Import-Module -Name Az.DataFactory
 Import-Module -Name azure.datafactory.tools
