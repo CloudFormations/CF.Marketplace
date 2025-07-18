@@ -74,10 +74,6 @@ Invoke-WebRequest -Uri "https://aka.ms/InstallAzureCLIDeb" -OutFile "azurecli-in
 bash ./azurecli-install.sh 
 az --version
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh" -OutFile "dbcli-install.sh"
-bash ./dbcli-install.sh
-databricks -v
-
 Write-Host "Installed required modules."
 
 # Login to the Azure Tenant
