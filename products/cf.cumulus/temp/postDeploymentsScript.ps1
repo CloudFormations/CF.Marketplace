@@ -41,7 +41,7 @@ param(
     [Parameter(Mandatory=$false)]
     [string] $databricksNamingConvention = 'dbw'
 )
-
+$ErrorActionPreference = "Stop"
 Write-Host "Attempting to download and install post-deployment script artifacts..."
 
 # Download and unzip the post-deployment artifact files from the repo
@@ -66,14 +66,17 @@ $env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
 
 # install other modules
 Install-Module -Name SqlServer -Force -Scope CurrentUser
-Install-Module -Name Az -Force -Scope CurrentUser
 Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
 Install-Module -Name azure.datafactory.tools -Scope CurrentUser -Force
 Install-Module -Name Az.Accounts -MinimumVersion 2.2.0 -Force -Scope CurrentUser
 
 Invoke-WebRequest -Uri "https://aka.ms/InstallAzureCLIDeb" -OutFile "azurecli-install.sh"
-bash ./azurecli-install.sh
+bash ./azurecli-install.sh 
 az --version
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh" -OutFile "dbcli-install.sh"
+bash ./dbcli-install.sh
+databricks -v
 
 Write-Host "Installed required modules."
 
@@ -96,28 +99,22 @@ $sqlServerName = $resourcePrefix + $sqlServerNamingConvention + $resourceSuffix
 $sqlDatabaseName = $resourcePrefix + $sqlDatabaseNamingConvention + $resourceSuffix
 $databricksWorkspaceName = $resourcePrefix + $databricksNamingConvention + $resourceSuffix
 
-$currentLocation = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
-Write-Host "Current location: $currentLocation"
 
-# Get Subscription Id from Name
-$subscriptionDetails = az account subscription list | ConvertFrom-Json | Where-Object { $_.displayName -eq $subscriptionId }
-$subscriptionIdValue = $subscriptionDetails.subscriptionId
-
-$keyVaultId = az keyvault list --subscription $subscriptionIdValue --query "[?name=='$keyVaultName'].id" --output tsv
+$keyVaultId = az keyvault list --subscription $subscriptionId --query "[?name=='$keyVaultName'].id" --output tsv
 $keyVaultUri = "https://${keyVaultName}.vault.azure.net/"
 
-$databricksWorkspaceURL = az databricks workspace show --name $databricksWorkspaceName --resource-group $resourceGroupName --subscription $subscriptionIdValue --query "workspaceUrl" --output tsv
+$databricksWorkspaceURL = az databricks workspace show --name $databricksWorkspaceName --resource-group $resourceGroupName --subscription $subscriptionId --query "workspaceUrl" --output tsv
 
 # Grant User Key Vault Secret Administrator RBAC to save Function App Key to KV
 $userDetails = az ad signed-in-user show | ConvertFrom-Json
 $userId = $userDetails.id
-az role assignment create --role "Key Vault Secrets Officer" --assignee $userId --scope "/subscriptions/$subscriptionIdValue/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
+az role assignment create --role "Key Vault Secrets Officer" --assignee $userId --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 # Grant Databricks Key Vault Secrets User RBAC to read secrets from KV
 # Get Databricks Object Id
 $databricksDetails = az ad sp list --query "[?displayName=='AzureDatabricks']" | ConvertFrom-Json
 
-az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionIdValue/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
+az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 
 Write-Host "Attempting to deploy Functions to the function app: $functionAppName"
@@ -126,18 +123,18 @@ Write-Host "Attempting to deploy Functions to the function app: $functionAppName
 # This command cleans the build output of the specified project using the Release configuration.
 # Generates full paths in the output, and suppresses the summary in the console logger
 $functionAppPath = "deploymentFiles\postdeploy_artifacts\azure.functionapp"
-& "$dotnetInstallDir/dotnet" clean $functionAppPath --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary
+& "$dotnetInstallDir/dotnet" clean $functionAppPath --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary --property:EnableWindowsTargeting=true
 
 # Package the function app including the functions into a folder for deployment
-$publishPath = $currentLocation + '\publishFunctions'
-& "$dotnetInstallDir/dotnet" publish $functionAppPath --configuration Release --output $publishPath
+$publishPath ='deploymentFiles\publishFunctions'
+& "$dotnetInstallDir/dotnet" publish $functionAppPath --configuration Release --output $publishPath --property:EnableWindowsTargeting=true
 
 # Compressing the publish folder into a zip file
 $sourcePath = $publishPath + '/*'
-Compress-Archive -Path $sourcePath -DestinationPath ./funcapp.zip -Update
+Compress-Archive -Path $sourcePath -DestinationPath "$tempPath/funcapp.zip" -Update
 
 # Deploying the zip to the functionapp
-az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src ./funcapp.zip
+az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$tempPath/funcapp.zip"
 
 Write-Host "Attempting to add the Function App Key to Azure Key Vault secrets."
 # Add Function App Key to Azure Key Vault secrets with the name cumulusfunctionsKey
@@ -266,10 +263,10 @@ $sqlPassword = az keyvault secret show --name $sqlValueSecret --vault-name $keyV
 $sourceFolderPath = "deploymentFiles\postdeploy_artifacts"
 
 # Publish the common schema DacPac
-SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.common.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" /v:DatabricksWSName=$databricksWorkspaceName /v:DatabricksHost="https://$databricksWorkspaceURL" /v:DLSName=$storageAccountName  /v:Environment="Dev"  /v:KeyVaultName=$keyVaultName  /v:RGName=$resourceGroupName /v:SubscriptionID=$subscriptionIdValue 
+SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.common.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" /v:DatabricksWSName=$databricksWorkspaceName /v:DatabricksHost="https://$databricksWorkspaceURL" /v:DLSName=$storageAccountName  /v:Environment="Dev"  /v:KeyVaultName=$keyVaultName  /v:RGName=$resourceGroupName /v:SubscriptionID=$subscriptionId 
 
 # Publish the control schema DacPac
-SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.control.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" /v:Environment="Dev"  /v:RGName=$resourceGroupName /v:SubscriptionID=$subscriptionIdValue /v:ADFName=$dataFactoryName /v:TenantID=$tenantId
+SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.control.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" /v:Environment="Dev"  /v:RGName=$resourceGroupName /v:SubscriptionID=$subscriptionId /v:ADFName=$dataFactoryName /v:TenantID=$tenantId
 
 # Publish the ingest schema DacPac
 SqlPackage /Action:Publish /SourceFile:"$sourceFolderPath\metadata.ingest.dacpac" /TargetConnectionString:"Server=tcp:$sqlServerName.database.windows.net,1433;Initial Catalog=$sqlDatabaseName;Persist Security Info=False;User ID=$sqlLogin;Password=$sqlPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" 
