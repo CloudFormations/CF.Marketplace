@@ -123,7 +123,7 @@ $functionAppPath = "deploymentFiles\postdeploy_artifacts\azure.functionapp"
 
 # Package the function app including the functions into a folder for deployment
 $publishPath ='deploymentFiles\publishFunctions'
-& "$dotnetInstallDir/dotnet" publish $functionAppPath --configuration Release --output $publishPath --property:EnableWindowsTargeting=true
+& "$dotnetInstallDir/dotnet" publish $functionAppPath --configuration Release --output $publishPath --property:EnableWindowsTargeting=true --verbosity diagnostic
 
 # Compressing the publish folder into a zip file
 $sourcePath = $publishPath + '/*'
