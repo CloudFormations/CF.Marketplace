@@ -41,8 +41,13 @@ param(
     [Parameter(Mandatory=$false)]
     [string] $databricksNamingConvention = 'dbw'
 )
-$ErrorActionPreference = "Stop"
+
 Write-Host "Attempting to download and install post-deployment script artifacts..."
+
+$funczipUrl = "https://github.com/CloudFormations/CF.Marketplace/raw/refs/heads/develop_powershell/products/cf.cumulus/temp/azure.functionapp.zip"
+$functempPath = "azure.functionapp"
+
+Invoke-WebRequest -Uri $funczipUrl -OutFile "$functempPath.zip"
 
 # Download and unzip the post-deployment artifact files from the repo
 $zipUrl = "https://github.com/CloudFormations/CF.Marketplace/raw/refs/heads/develop_powershell/products/cf.cumulus/temp/postdeploy_artifacts.zip"
@@ -54,7 +59,7 @@ Expand-Archive -Path "$tempPath.zip" -DestinationPath $tempPath -Force
 Write-Host "Post-deployment artifacts downloaded and extracted to $tempPath"
 
 # Download the dotnet-install script
-
+<#
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 
 $dotnetInstallDir = "$HOME/.dotnet"
@@ -63,7 +68,7 @@ Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.sh" -OutFile "dotnet-i
 bash ./dotnet-install.sh -InstallDir $dotnetInstallDir --architecture $architecture
 $env:PATH = "$dotnetInstallDir;$dotnetInstallDir/tools;$env:PATH"
 & "$dotnetInstallDir/dotnet" --version
-
+#>
 # install other modules
 Install-Module -Name SqlServer -Force -Scope CurrentUser
 Install-Module -Name Az.DataFactory -Force -Scope CurrentUser
@@ -104,18 +109,18 @@ $databricksWorkspaceURL = az databricks workspace show --name $databricksWorkspa
 # Grant User Key Vault Secret Administrator RBAC to save Function App Key to KV
 $userDetails = az ad signed-in-user show | ConvertFrom-Json
 $userId = $userDetails.id
-az role assignment create --role "Key Vault Secrets Officer" --assignee $userId --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
+#az role assignment create --role "Key Vault Secrets Officer" --assignee $userId --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 # Grant Databricks Key Vault Secrets User RBAC to read secrets from KV
 # Get Databricks Object Id
-$databricksDetails = az ad sp list --query "[?displayName=='AzureDatabricks']" | ConvertFrom-Json
+#$databricksDetails = az ad sp list --query "[?displayName=='AzureDatabricks']" | ConvertFrom-Json
 
-az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
+#az role assignment create --assignee-object-id $databricksDetails.id --role "Key Vault Secrets User" --scope "/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.KeyVault/vaults/$keyVaultName"
 
 
 Write-Host "Attempting to deploy Functions to the function app: $functionAppName"
 # Deploy the C# Functions to the Function App
-
+<#>
 # This command cleans the build output of the specified project using the Release configuration.
 # Generates full paths in the output, and suppresses the summary in the console logger
 $functionAppPath = "deploymentFiles\postdeploy_artifacts\azure.functionapp"
@@ -128,9 +133,12 @@ $publishPath ='deploymentFiles\publishFunctions'
 # Compressing the publish folder into a zip file
 $sourcePath = $publishPath + '/*'
 Compress-Archive -Path $sourcePath -DestinationPath "$tempPath/funcapp.zip" -Update
-
+#>
 # Deploying the zip to the functionapp
-az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$tempPath/funcapp.zip"
+#az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$tempPath/funcapp.zip"
+
+az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$functempPath.zip"
+
 
 Write-Host "Attempting to add the Function App Key to Azure Key Vault secrets."
 # Add Function App Key to Azure Key Vault secrets with the name cumulusfunctionsKey
@@ -279,7 +287,6 @@ az sql server ad-admin create --resource-group $resourceGroupName --server $sqlS
 Write-Host "SQL server metadata objects deployed successfully."
 Write-Host "Attempting to add ADF Permissions to SQL Server: $sqlServerName"
 # Create permissions for ADF on the SQL Instance, including a user, role and assigment of user to the role
-Import-Module -Name SqlServer -Verbose
 
 $accessToken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
 
