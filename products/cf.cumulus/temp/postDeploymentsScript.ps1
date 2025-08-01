@@ -41,7 +41,7 @@ param(
     [Parameter(Mandatory=$false)]
     [string] $databricksNamingConvention = 'dbw'
 )
-
+$ErrorActionPreference = "Stop"
 Write-Host "Attempting to download and install post-deployment script artifacts..."
 
 $funczipUrl = "https://github.com/CloudFormations/CF.Marketplace/raw/refs/heads/develop_powershell/products/cf.cumulus/temp/azure.functionapp.zip"
@@ -83,6 +83,7 @@ Write-Host "Installed required modules."
 
 # Login to the Azure Tenant
 az login --tenant $tenantId
+az account set --subscription "b8c57bff-3a07-4cff-b28b-0168408e0b8e"
 
 
 if ($resourceGroupName -eq '') { 
@@ -138,7 +139,6 @@ Compress-Archive -Path $sourcePath -DestinationPath "$tempPath/funcapp.zip" -Upd
 #az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$tempPath/funcapp.zip"
 
 az functionapp deployment source config-zip --resource-group $resourceGroupName --name $functionAppName --src "$functempPath.zip"
-
 
 Write-Host "Attempting to add the Function App Key to Azure Key Vault secrets."
 # Add Function App Key to Azure Key Vault secrets with the name cumulusfunctionsKey
