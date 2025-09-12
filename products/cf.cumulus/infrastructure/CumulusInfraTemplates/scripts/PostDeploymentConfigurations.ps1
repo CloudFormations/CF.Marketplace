@@ -337,7 +337,7 @@ function Deploy-SQlMetaData {
         $sqlPassword = az keyvault secret show --name $sqlPasswordSecret --vault-name $KeyVaultName --query "value" -o tsv
 
         Write-Host "sqlLogin: $sqlLogin"
-        Write-Host "sqlPassword: $sqlPassword"
+        #Write-Host "sqlPassword: $sqlPassword"
 
         if (-not $sqlLogin -or -not $sqlPassword) {
             throw "Failed to retrieve SQL credentials from Key Vault."
